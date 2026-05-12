@@ -1,0 +1,11 @@
+{
+  "name": "salon-ai-receptionist",
+  "version": "0.1.0",
+  "private": true,
+  "description": "White-label AI receptionist SaaS for nail salons.",
+  "scripts": {
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:web": "npm --prefix apps/web run build",
+    "lint:web": "npm --prefix apps/web run lint"
+  }
+}
