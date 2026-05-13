@@ -29,6 +29,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# local app data
+.data
+apps/**/.data
+
 # system
 .DS_Store
 Thumbs.db

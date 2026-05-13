@@ -2,12 +2,28 @@
 -- This creates one demo business and related salon data.
 -- User membership rows require real auth.users IDs, so they are not seeded here.
 
-insert into public.businesses (id, name, slug, phone, timezone)
+insert into public.businesses (
+  id,
+  name,
+  slug,
+  phone,
+  address_line1,
+  address_line2,
+  city,
+  state,
+  postal_code,
+  timezone
+)
 values (
   '11111111-1111-1111-1111-111111111111',
   'Luxe Nail Studio',
   'luxe-nail-studio',
   '+16265550100',
+  '123 Main Street',
+  null,
+  'Pasadena',
+  'CA',
+  '91101',
   'America/Los_Angeles'
 )
 on conflict (id) do update
@@ -15,6 +31,11 @@ set
   name = excluded.name,
   slug = excluded.slug,
   phone = excluded.phone,
+  address_line1 = excluded.address_line1,
+  address_line2 = excluded.address_line2,
+  city = excluded.city,
+  state = excluded.state,
+  postal_code = excluded.postal_code,
   timezone = excluded.timezone;
 
 insert into public.business_hours (business_id, day_of_week, opens_at, closes_at, is_closed)
@@ -31,6 +52,19 @@ set
   opens_at = excluded.opens_at,
   closes_at = excluded.closes_at,
   is_closed = excluded.is_closed;
+
+insert into public.service_categories (business_id, slug, name, sort_order)
+values
+  ('11111111-1111-1111-1111-111111111111', 'manicure', 'Manicure', 10),
+  ('11111111-1111-1111-1111-111111111111', 'pedicure', 'Pedicure', 20),
+  ('11111111-1111-1111-1111-111111111111', 'extensions', 'Extensions', 30),
+  ('11111111-1111-1111-1111-111111111111', 'eyebrows', 'Eyebrows', 40),
+  ('11111111-1111-1111-1111-111111111111', 'extras', 'Extras', 50),
+  ('11111111-1111-1111-1111-111111111111', 'lash-brows', 'Lash & Brows', 60)
+on conflict (business_id, slug) do update
+set
+  name = excluded.name,
+  sort_order = excluded.sort_order;
 
 insert into public.services (business_id, name, description, price_cents, duration_minutes, is_active)
 values

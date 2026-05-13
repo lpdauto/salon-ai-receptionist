@@ -4,6 +4,7 @@ const navItems = [
   { href: "/dashboard", label: "Overview" },
   { href: "/dashboard/calls", label: "Calls" },
   { href: "/dashboard/requests", label: "Requests" },
+  { href: "/dashboard/test-call", label: "Test Call" },
   { href: "/dashboard/settings", label: "Settings" },
 ];
 

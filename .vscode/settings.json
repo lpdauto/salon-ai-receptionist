@@ -1,0 +1,24 @@
+{
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/.vercel/**": true,
+    "**/out/**": true,
+    "**/dist/**": true,
+    "**/*.log": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/.vercel": true,
+    "**/out": true,
+    "**/dist": true
+  },
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/.vercel": true,
+    "**/out": true,
+    "**/dist": true
+  }
+}
