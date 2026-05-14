@@ -3,7 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "description": "White-label AI receptionist SaaS for nail salons.",
+  "workspaces": [
+    "apps/web",
+    "apps/voice-server"
+  ],
   "scripts": {
+    "build": "npm --prefix apps/web run build",
+    "start": "npm --prefix apps/web run start",
     "dev:web": "npm --prefix apps/web run dev",
     "build:web": "npm --prefix apps/web run build",
     "lint:web": "npm --prefix apps/web run lint"
