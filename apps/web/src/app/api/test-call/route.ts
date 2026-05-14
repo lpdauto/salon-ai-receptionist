@@ -72,6 +72,8 @@ export async function POST(request: Request) {
       return Response.json(
         {
           error: "OpenAI could not generate a test-call reply.",
+          detail: readOpenAiError(body),
+          status: response.status,
         },
         { status: 502 },
       );
@@ -245,4 +247,18 @@ function readResponseText(body: Record<string, unknown>) {
   }
 
   return null;
+}
+
+function readOpenAiError(body: Record<string, unknown>) {
+  const error = body.error;
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const value = error as Record<string, unknown>;
+  return {
+    code: typeof value.code === "string" ? value.code : null,
+    message: typeof value.message === "string" ? value.message : null,
+    type: typeof value.type === "string" ? value.type : null,
+  };
 }
