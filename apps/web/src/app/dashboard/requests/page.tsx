@@ -2,6 +2,8 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { MetricCard } from "@/components/MetricCard";
 import { getDashboardData, AppointmentRequest } from "@/lib/dashboard-data";
 
+export const dynamic = "force-dynamic";
+
 export default async function RequestsPage() {
   const data = await getDashboardData();
   const activeRequests = data.appointmentRequests.filter((request) => request.status !== "archived");

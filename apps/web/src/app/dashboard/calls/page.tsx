@@ -3,6 +3,8 @@ import { MetricCard } from "@/components/MetricCard";
 import { PlaceholderTable } from "@/components/PlaceholderTable";
 import { getDashboardData } from "@/lib/dashboard-data";
 
+export const dynamic = "force-dynamic";
+
 export default async function CallsPage() {
   const data = await getDashboardData();
   const unresolvedCalls = data.calls.filter((call) => call.unresolved).length;
