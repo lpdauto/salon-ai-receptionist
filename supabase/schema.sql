@@ -99,8 +99,16 @@ create table if not exists public.appointment_requests (
   requested_date date,
   requested_day text,
   requested_time time,
+  requested_datetime_text text,
+  appointment_intent_detected boolean not null default true,
+  missing_fields text[] not null default array[]::text[],
+  needs_review boolean not null default false,
+  approved_at timestamptz,
+  suggested_datetime_text text,
+  contacted_at timestamptz,
+  archived_at timestamptz,
   notes text,
-  status text not null default 'new' check (status in ('new', 'pending', 'needs_review', 'quoted', 'declined', 'converted')),
+  status text not null default 'new' check (status in ('new', 'needs_review', 'confirmed', 'suggested_time', 'contacted', 'archived')),
   created_at timestamptz not null default now()
 );
 
@@ -114,3 +122,4 @@ create index if not exists calls_business_id_created_at_idx on public.calls (bus
 create index if not exists calls_twilio_call_sid_idx on public.calls (twilio_call_sid);
 create index if not exists appointment_requests_business_id_created_at_idx on public.appointment_requests (business_id, created_at desc);
 create index if not exists appointment_requests_business_id_status_idx on public.appointment_requests (business_id, status);
+create index if not exists appointment_requests_business_id_needs_review_idx on public.appointment_requests (business_id, needs_review, created_at desc);

@@ -7,7 +7,7 @@ export default async function DashboardPage() {
   const data = await getDashboardData();
   const unresolvedCalls = data.calls.filter((call) => call.unresolved).length;
   const pendingRequests = data.appointmentRequests.filter((request) =>
-    ["pending", "needs_review"].includes(request.status),
+    ["new", "needs_review", "suggested_time"].includes(request.status),
   ).length;
   const activeServices = data.services.filter((service) => service.is_active).length;
   const recentRows = [

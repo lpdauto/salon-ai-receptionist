@@ -1,6 +1,6 @@
 import { SalonProfile } from "./salonProfile";
 
-const bookingTerms = /\b(book|booking|schedule|appointment|come in|available|availability|reserve|set up)\b/i;
+const bookingTerms = /\b(book|booking|schedule|appointment|come in|available|availability|reserve|set up|make an appointment)\b/i;
 const priceTerms = /\b(price|prices|cost|how much|charge|charges|rate|rates)\b/i;
 const hoursTerms = /\b(hours|open|close|closed|closing|what time|when are you)\b/i;
 const addressTerms = /\b(address|located|location|where are you|where is|directions)\b/i;
@@ -32,7 +32,8 @@ function buildBaseTurnInstructions(profile: SalonProfile) {
 - Prefer front desk fragments: "Okay, what day?", "Morning or afternoon?", "Can I get your name?", "Got it."
 - Answer the question, then stop talking.
 - Ask one question at a time.
-- Use warm casual wording sparingly: "Of course," "Yeah," "Sure," "No problem," "Got it," "One sec."
+- Use warm casual wording sparingly: "Sure," "Yes," "Of course," "No problem," "Got it," "One sec."
+- Do not start most factual answers with "Yeah." Prefer "Sure" or "Yes", or just answer directly.
 - Do not use more than one filler in a reply.
 - If the response takes a beat, start with one tiny filler: "Okay...", "Mm-hmm...", "One sec...", or "Alright...".
 - Do not sound annoyed, dismissive, flat, or rushed.
@@ -61,12 +62,12 @@ function buildIntentHint(profile: SalonProfile, customerText: string, options: C
   const normalized = normalize(customerText);
 
   if (acknowledgementOnlyTerms.test(normalized)) {
-    return `The caller only acknowledged the last answer. Do not introduce booking, services, prices, hours, address, or policies. Either stay very brief with "Yeah." or say nothing extra.`;
+    return `The caller only acknowledged the last answer. Do not introduce booking, services, prices, hours, address, or policies. Either stay very brief with "Sure." or say nothing extra.`;
   }
 
   if (addressTerms.test(customerText)) {
     return profile.address
-      ? `Say the address warmly and naturally, like: "Yeah, we're at ${profile.address}." Then stop. Do not add landmarks, directions, parking, services, hours, or booking prompts.`
+      ? `Say the address warmly and naturally, like: "Sure, we're at ${profile.address}." Then stop. Do not add landmarks, directions, parking, services, hours, or booking prompts.`
       : `Say: "The salon can confirm the address." Do not add anything else.`;
   }
 
@@ -83,7 +84,7 @@ function buildIntentHint(profile: SalonProfile, customerText: string, options: C
   if (priceTerms.test(customerText)) {
     const service = findMentionedService(profile, normalized, { allowCategoryOnlyMatch: false });
     if (service) {
-      return `The caller asked about price. Say it warmly, like: "Yeah, ${service.name} is ${formatMoney(service.price_cents)}." Then stop. Do not ask to book.`;
+      return `The caller asked about price. Say it warmly, like: "Sure, ${service.name} is ${formatMoney(service.price_cents)}." Then stop. Do not ask to book.`;
     }
 
     return `The caller asked about price, but the service is unclear. Ask one warm short clarifying question, like "Sure, which service was that for?" Do not list the menu.`;
@@ -101,7 +102,8 @@ function buildIntentHint(profile: SalonProfile, customerText: string, options: C
   }
 
   if (menuTerms.test(customerText)) {
-    const names = servicesForMenuQuestion(profile, normalized).slice(0, 4).map((item) => item.name).join(", ");
+    const menuServices = servicesForMenuQuestion(profile, normalized);
+    const names = (menuServices.length ? menuServices : profile.services).slice(0, 4).map((item) => item.name).join(", ");
     return names
       ? `The caller asked about services. Warmly name only a few services: ${names}. Then ask "Was there one you had in mind?" Do not read the full menu.`
       : `Say: "The salon can confirm the service menu." Do not add anything else.`;
@@ -110,15 +112,15 @@ function buildIntentHint(profile: SalonProfile, customerText: string, options: C
   const categoryServices = servicesForMenuQuestion(profile, normalized);
   if (categoryServices.length > 1) {
     const names = categoryServices.slice(0, 4).map((item) => item.name).join(", ");
-    return `The caller asked about a service category. Say warmly: "Yeah, for that we have ${names}." Then stop. Do not say there are no other types unless the exact configured list is empty. Do not ask to book.`;
+    return `The caller asked about a service category. Say warmly: "Sure, for that we have ${names}." Then stop. Do not say there are no other types unless the exact configured list is empty. Do not ask to book.`;
   }
 
   if (bookingTerms.test(customerText)) {
     const policyLine = options.didMentionRequestPolicy
       ? `Do not repeat the request/confirmation disclaimer.`
-      : `Say this once if the caller is starting an appointment request: "This is a request. The salon will confirm availability."`;
+      : `Say this once if the caller is starting an appointment request: "This is just a request. The salon will approve it and text you to confirm."`;
 
-    return `The caller may want an appointment. Sound warm and helpful, like salon front desk staff. ${policyLine} Lead naturally in this order: service, preferred day/time, name, phone number, final request summary. Ask one missing detail at a time. Use short fragments like "Sure, what service?", "Okay, what day?", "Morning or afternoon?", "Can I get your name?", "What's a good phone number?", and at the end, "Got it. The salon will confirm shortly." Do not repeat all details after every answer. Only summarize at the end. Do not confirm the booking. Do not claim to check availability. Do not list services unless they ask.`;
+    return `The caller wants an appointment. Sound warm and helpful, like salon front desk staff. ${policyLine} Collect every required detail before wrapping up: service, preferred day/time, name, and phone number. Phone number is required so the operator can text the appointment confirmation after approval. Ask one missing detail at a time. If they gave service/day/time/name but not phone, your next question must be "What's a good phone number for the confirmation text?" Use short fragments like "Sure, what service?", "Okay, what day?", "Morning or afternoon?", "Can I get your name?", "What's a good phone number for the confirmation text?", and at the end, "Got it. I’ll send the request over, and they’ll text you once it’s approved." Do not say "you're set." Do not say the appointment is confirmed. Do not say the salon will text immediately. Do not summarize until service, day/time, name, and phone are all collected. Do not claim to check availability. Do not list services unless they ask.`;
   }
 
   return `Answer only the latest question. Keep it warm, casual, and short. Then stop. Do not introduce services, prices, hours, address, policies, or booking unless the caller asked.`;
@@ -139,7 +141,7 @@ function buildHoursHint(profile: SalonProfile, customerText: string) {
     return `Say warmly: "We're closed ${day}." Then stop. Do not add services or booking prompts.`;
   }
 
-  return `Say warmly: "Yeah, ${day} we're open ${formatTime(hours.opens_at)} to ${formatTime(hours.closes_at)}." Then stop. Do not add services or booking prompts.`;
+  return `Say warmly: "Yes, ${day} we're open ${formatTime(hours.opens_at)} to ${formatTime(hours.closes_at)}." Then stop. Do not add services or booking prompts.`;
 }
 
 function findMentionedService(
@@ -202,7 +204,7 @@ function servicesForMenuQuestion(profile: SalonProfile, normalizedText: string) 
     return false;
   });
 
-  return categoryMatches.length ? categoryMatches : profile.services;
+  return categoryMatches;
 }
 
 function serviceAliases(service: { name: string }) {

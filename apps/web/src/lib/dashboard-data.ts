@@ -68,11 +68,20 @@ export type CallRecord = {
 
 export type AppointmentRequest = {
   id: string;
+  business_id: string;
   customer_name: string | null;
   customer_phone: string | null;
   requested_service: string | null;
   requested_date: string | null;
+  requested_datetime_text: string | null;
   requested_time: string | null;
+  appointment_intent_detected: boolean;
+  missing_fields: string[];
+  needs_review: boolean;
+  approved_at: string | null;
+  suggested_datetime_text: string | null;
+  contacted_at: string | null;
+  archived_at: string | null;
   notes: string | null;
   status: string;
   created_at: string;
@@ -186,13 +195,22 @@ export const fallbackData: DashboardData = {
   appointmentRequests: [
     {
       id: "request-1",
+      business_id: TEST_BUSINESS_ID,
       customer_name: "Maya L.",
       customer_phone: "+16265551234",
       requested_service: "Gel Manicure",
       requested_date: null,
+      requested_datetime_text: "Friday afternoon",
       requested_time: "15:00",
+      appointment_intent_detected: true,
+      missing_fields: [],
+      needs_review: false,
+      approved_at: null,
+      suggested_datetime_text: null,
+      contacted_at: null,
+      archived_at: null,
       notes: "Appointment request only. Needs owner confirmation.",
-      status: "pending",
+      status: "new",
       created_at: new Date().toISOString(),
     },
   ],
@@ -259,7 +277,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     supabase
       .from("appointment_requests")
       .select(
-        "id,customer_name,customer_phone,requested_service,requested_date,requested_time,notes,status,created_at",
+        "id,business_id,customer_name,customer_phone,requested_service,requested_date,requested_datetime_text,requested_time,appointment_intent_detected,missing_fields,needs_review,approved_at,suggested_datetime_text,contacted_at,archived_at,notes,status,created_at",
       )
       .eq("business_id", businessId)
       .order("created_at", { ascending: false })

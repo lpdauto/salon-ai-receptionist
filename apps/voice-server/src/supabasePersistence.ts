@@ -85,10 +85,19 @@ export async function saveCallTracking(input: CallTrackingInput) {
 
 export async function saveAppointmentRequest(input: AppointmentRequestInput) {
   const extraction = input.extraction;
+  if (!extraction.appointment_intent_detected) {
+    console.log("[supabase] Skipping appointment_requests row because no appointment intent was detected.", {
+      callId: input.callId,
+      summary: extraction.summary,
+    });
+    return null;
+  }
+
   const normalizedTime = normalizeTimeForPostgres(extraction.requested_time);
   const notes = [
     extraction.notes,
     extraction.requested_day ? `Requested day: ${extraction.requested_day}` : null,
+    extraction.requested_datetime_text ? `Requested date/time: ${extraction.requested_datetime_text}` : null,
     extraction.requested_time && !normalizedTime ? `Requested time: ${extraction.requested_time}` : null,
   ]
     .filter(Boolean)
@@ -99,8 +108,11 @@ export async function saveAppointmentRequest(input: AppointmentRequestInput) {
     customerName: extraction.customer_name,
     requestedService: extraction.requested_service,
     requestedDate: extraction.requested_date,
+    requestedDatetimeText: extraction.requested_datetime_text,
     requestedDay: extraction.requested_day,
     requestedTime: extraction.requested_time,
+    missingFields: extraction.missing_fields,
+    needsReview: extraction.needs_review,
   });
 
   const { data, error } = await getSupabaseClient()
@@ -114,8 +126,12 @@ export async function saveAppointmentRequest(input: AppointmentRequestInput) {
       requested_date: extraction.requested_date,
       requested_day: extraction.requested_day,
       requested_time: normalizedTime,
+      requested_datetime_text: extraction.requested_datetime_text,
+      appointment_intent_detected: true,
+      missing_fields: extraction.missing_fields,
+      needs_review: extraction.needs_review,
       notes: notes || null,
-      status: "new",
+      status: extraction.needs_review ? "needs_review" : "new",
     })
     .select("id")
     .single();
